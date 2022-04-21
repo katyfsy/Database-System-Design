@@ -36,9 +36,9 @@ CREATE TABLE IF NOT EXISTS answers_photos (
   photo_url VARCHAR(1000),
   PRIMARY KEY (id),
   CONSTRAINT fk_answer
-  FOREIGN KEY (answer_id)
-    REFERENCES answers(id)
-    ON DELETE CASCADE
+    FOREIGN KEY (answer_id)
+      REFERENCES answers(id)
+      ON DELETE CASCADE
 )
 
 -- ALTER TABLE answers_photos
