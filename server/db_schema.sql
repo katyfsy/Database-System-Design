@@ -3,26 +3,26 @@
 -- CREATE DATABASE qa;
 
 CREATE TABLE IF NOT EXISTS questions (
-  id INT GENERATED ALWAYS AS IDENTITY,
+  id SERIAL NOT NULL,
   product_id INTEGER,
   question_body VARCHAR(250),
   question_date BIGINT,
   asker_name VARCHAR(60),
   asker_email VARCHAR(60),
-  reported BOOLEAN,
-  helpful INTEGER,
+  reported BOOLEAN DEFAULT FALSE,
+  helpful INTEGER DEFAULT 0,
   PRIMARY KEY (id)
 )
 
 CREATE TABLE IF NOT EXISTS answers (
-  id INT GENERATED ALWAYS AS IDENTITY,
+  id SERIAL NOT NULL,
   question_id INTEGER,
   answer_body VARCHAR(1000),
   answer_date BIGINT,
   answer_name VARCHAR(60),
   answer_email VARCHAR(60),
-  reported BOOLEAN,
-  helpful INTEGER,
+  reported BOOLEAN DEFAULT FALSE,
+  helpful INTEGER DEFAULT 0,
   PRIMARY KEY (id),
   CONSTRAINT fk_question
     FOREIGN KEY (question_id)
@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS answers (
 )
 
 CREATE TABLE IF NOT EXISTS answers_photos (
-  id INT GENERATED ALWAYS AS IDENTITY,
+  id SERIAL NOT NULL,
   answer_id INTEGER,
   photo_url VARCHAR(1000),
   PRIMARY KEY (id),
@@ -41,5 +41,8 @@ CREATE TABLE IF NOT EXISTS answers_photos (
       ON DELETE CASCADE
 )
 
--- ALTER TABLE answers_photos
---   ALTER COLUMN photo_url TYPE VARCHAR(1000);
+-- ALTER TABLE questions
+--   ALTER COLUMN id TYPE serial NOT NULL;
+
+-- ALTER TABLE questions
+--   ALTER COLUMN id INT NOT NULL AUTO_INCREMENT PRIMARY KEY;
