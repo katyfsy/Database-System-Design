@@ -46,3 +46,9 @@ CREATE TABLE IF NOT EXISTS answers_photos (
 
 -- ALTER TABLE questions
 --   ALTER COLUMN id INT NOT NULL AUTO_INCREMENT PRIMARY KEY;
+
+select setval ('answers_photos_id_seq', (select max(id) from answers_photos));
+
+select setval ('questions_id_seq', (select max(id) from questions));
+
+select setval ('answers_id_seq', (select max(id) from answers));

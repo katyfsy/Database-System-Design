@@ -9,3 +9,5 @@ router.put('/qa/questions/:question_id/helpful', controller.putQuestionHelpful);
 router.put('/qa/answers/:answer_id/helpful', controller.putAnswerHelpful);
 router.put('/qa/questions/:question_id/report', controller.putReportQuestion);
 router.put('/qa/answers/:answer_id/report', controller.putReportAnswer);
+
+module.exports = router;

@@ -1,79 +1,140 @@
 const pool = require('../database');
 
 module.exports = {
-  getQuestions() {
-    const queryString = 'SELECT * from questions LEFT JOIN answers on questions.id = answers.question_id LEFT JOIN answers_photos ON answers.id = answers_photos.answer_id WHERE questions.product_id = 37312 ORDER BY questions.helpful DESC';
+  getQuestions(product_id) {
+    const queryString = `
+      SELECT
+        questions.id AS question_id,
+        questions.question_body,
+        to_timestamp(questions.question_date/1000) AS question_date,
+        questions.asker_name,
+        questions.reported,
+        questions.helpful AS question_helpfulness,COALESCE (
+          JSON_OBJECT_AGG(answers.id,
+            JSON_BUILD_OBJECT(
+              'id', answers.id,
+              'body', answers.answer_body,
+              'date', to_timestamp(answers.answer_date/1000),
+              'answerer_name', answers.answer_name,
+              'helpfulness', answers.helpful,
+              'photos',
+              ARRAY (SELECT answers_photos.photo_url as URL FROM answers_photos WHERE answers_photos.answer_id = answers.id )
+            )
+          )
+          FILTER (WHERE answers.id IS NOT NULL),
+          '{}'::JSON
+        ) AS answers
+      FROM questions
+      LEFT JOIN
+        answers
+      ON questions.id = answers.question_id
+      WHERE product_id = $1
+      AND questions.reported = false
+      GROUP BY questions.id`;
+    const values = [product_id];
 
-    pool
-      .query(queryString)
-      .then((res) => console.log(res.rows[0].name))
-      .catch((err) => console.error('Error executing query', err.stack));
+    return pool.query(queryString, values);
   },
 
-  getAnswers() {
-    const queryString = 'select array_to_json(array_agg(row_to_json(ToBuild))) from (select question.id, question.product_id, question.asker_name, array_agg(question_addon.jo_answer_item) from questions question left join (select answer_tbl.question_id, json_build_object(answer_id, array_photo_id) as jo_answer_item  from (select answer.question_id, answer.id as answer_id, array_agg(photo.id) as array_photo_id from answers answer left join answers_photos photo on photo.answer_id = answer.id group by answer.id, answer.question_id) answer_tbl) question_addon on question_addon.question_id = question.id where question.id = 28 group by question.id, question.product_id, question.asker_name)ToBuild';
+  getAnswers(question_id) {
+    const queryString = `
+      SELECT
+        answers.id AS answer_id,
+        answers.answer_body,
+        to_timestamp(answers.answer_date/1000) AS date,
+        answers.answer_name,
+        answers.answer_email,
+        answers.reported,
+        answers.helpful,
+        COALESCE (
+            json_agg(
+              json_build_object(
+                  'id', answers_photos.id, 'answer id', answers_photos.answer_id, 'url', answers_photos.photo_url))
+          FILTER (WHERE answers_photos.id IS NOT NULL), '[]') AS photos
+      FROM answers
+      LEFT JOIN
+        answers_photos
+      ON answers.id = answers_photos.answer_id
+      WHERE answers.question_id = $1
+      AND answers.reported = false
+      GROUP BY answers.id;`;
+    const values = [question_id];
 
-    pool
-      .query(queryString)
-      .then((res) => console.log(res.rows[0].name))
-      .catch((err) => console.error('Error executing query', err.stack));
+    return pool.query(queryString, values);
   },
 
-  postQuestion() {
-    const queryString = 'INSERT INTO questions(product_id, question_body, question_date, asker_name, asker_email) VALUES(686356, 'a question', extract(epoch from now()) * 1000, 'bee', 'bee@gmail.com')';
+  postQuestion(product_id, body, name, email) {
+    const queryString = `
+      INSERT INTO
+        questions
+          (product_id, question_body, question_date, asker_name, asker_email)
+        VALUES
+          ($1, $2, extract(epoch from now()) * 1000, $3, $4)`;
 
-    pool
-      .query(queryString)
-      .then((res) => console.log(res.rows[0].name))
-      .catch((err) => console.error('Error executing query', err.stack));
+    const values = [product_id, body, name, email];
+
+    return pool.query(queryString, values);
   },
 
-  postAnswer() {
-    const queryString = 'INSERT INTO answers (question_id, answer_body, answer_date, answer_name, answer_email) VALUES (1, 'an answer', extract(epoch from now()) * 1000, 'honey', 'honey@gmail.com')';
+  postAnswer(question_id, body, name, email, photos) {
+    const queryString = `
+    WITH answer_post AS(
+      INSERT INTO
+        answers
+          (question_id, answer_body, answer_date, answer_name, answer_email)
+        VALUES
+          ($1, $2, extract(epoch from now()) * 1000, $3, $4)
+      RETURNING id
+    )
+    INSERT INTO
+      answers_photos
+        (answer_id, photo_url)
+      VALUES
+      ((select id FROM answer_post), unnest($5::text[]));
+    `;
 
-    pool
-    .query(queryString)
-    .then((res) => console.log(res.rows[0].name))
-    .catch((err) => console.error('Error executing query', err.stack));
+    const values = [question_id, body, name, email, photos];
+
+    return pool.query(queryString, values);
   },
 
-  putQuestionHelpful() {
-    const queryString = 'UPDATE questions SET helpful = helpful + 1 WHERE id = 8;';
+  putQuestionHelpful(question_id) {
+    const queryString = `
+      UPDATE questions
+      SET helpful = helpful + 1
+      WHERE id = $1;`;
+    const values = [question_id];
 
-    pool
-    .query(queryString)
-    .then((res) => console.log(res.rows[0].name))
-    .catch((err) => console.error('Error executing query', err.stack));
-
+    return pool.query(queryString, values);
   },
 
-  putAnswerHelpful() {
-    const queryString = 'UPDATE answers SET helpful = helpful + 1 WHERE id = 3';
+  putAnswerHelpful(answer_id) {
+    const queryString = `
+      UPDATE answers
+      SET helpful = helpful + 1
+      WHERE id = $1`;
+    const values = [answer_id];
 
-    pool
-    .query(queryString)
-    .then((res) => console.log(res.rows[0].name))
-    .catch((err) => console.error('Error executing query', err.stack));
-
+    return pool.query(queryString, values);
   },
 
-  putReportQuestion() {
-    const queryString = 'UPDATE questions SET reported = TRUE WHERE id = 9';
+  putReportQuestion(question_id) {
+    const queryString = `
+      UPDATE questions
+      SET reported = TRUE
+      WHERE id = $1`;
+    const values = [question_id];
 
-    pool
-    .query(queryString)
-    .then((res) => console.log(res.rows[0].name))
-    .catch((err) => console.error('Error executing query', err.stack));
-
+    return pool.query(queryString, values);
   },
 
-  putReportAnswer() {
-    const queryString = 'UPDATE answers SET reported = TRUE WHERE id = 9';
+  putReportAnswer(answer_id) {
+    const queryString = `
+      UPDATE answers
+      SET reported = TRUE
+      WHERE id = $1`;
+    const values = [answer_id];
 
-    pool
-    .query(queryString)
-    .then((res) => console.log(res.rows[0].name))
-    .catch((err) => console.error('Error executing query', err.stack));
-
+    return pool.query(queryString, values);
   },
 };
