@@ -2,13 +2,16 @@ const models = require('../models');
 
 module.exports = {
   getQuestions(req, res) {
-    const { product_id, page, count } = req.query;
-    const formattedresult = [];
+    const { product_id, page = 1, count = 5 } = req.query;
+    const formattedResult = {
+      product_id: product_id
+    };
 
-    models.getQuestions(product_id)
+    models.getQuestions(product_id, page, count)
       .then((result) => {
+        formattedResult.results = result.rows;
         console.log(result.rows);
-        res.status(200).json(result.rows);
+        res.status(200).json(formattedResult);
       })
       .catch((err) => {
         console.log(err);
@@ -18,14 +21,18 @@ module.exports = {
 
   getAnswers(req, res) {
     const { question_id } = req.params;
-    const { page, count } = req.query;
+    const { page = 1, count = 5 } = req.query;
+    const formattedResult = {
+      question: question_id,
+      page: page,
+      count: count
+    };
 
-    console.log(page, count, question_id);
-
-    models.getAnswers(question_id)
+    models.getAnswers(question_id, count, page)
       .then((result) => {
+        formattedResult.results = result.rows;
         console.log(result.rows);
-        res.status(200).json(result.rows);
+        res.status(200).json(formattedResult);
       })
       .catch((err) => {
         console.log(err);
@@ -48,7 +55,6 @@ module.exports = {
     const {
       body, name, email, photos,
     } = req.body;
-    console.log(typeof (question_id), typeof (body), typeof (name), typeof (email), typeof (photos));
 
     models.postAnswer(question_id, body, name, email, photos)
       .then((result) => res.status(200).send('Answer Created'))

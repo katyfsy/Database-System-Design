@@ -1,7 +1,7 @@
 const pool = require('../database');
 
 module.exports = {
-  getQuestions(product_id) {
+  getQuestions(product_id, page, count) {
     const queryString = `
       SELECT
         questions.id AS question_id,
@@ -30,13 +30,16 @@ module.exports = {
       ON questions.id = answers.question_id
       WHERE product_id = $1
       AND questions.reported = false
-      GROUP BY questions.id`;
-    const values = [product_id];
+      GROUP BY questions.id
+      LIMIT $2
+      OFFSET $3
+      `;
+    const values = [product_id, count, count * page - count];
 
     return pool.query(queryString, values);
   },
 
-  getAnswers(question_id) {
+  getAnswers(question_id, count, page) {
     const queryString = `
       SELECT
         answers.id AS answer_id,
@@ -57,8 +60,11 @@ module.exports = {
       ON answers.id = answers_photos.answer_id
       WHERE answers.question_id = $1
       AND answers.reported = false
-      GROUP BY answers.id;`;
-    const values = [question_id];
+      GROUP BY answers.id
+      LIMIT $2
+      OFFSET $3
+      ;`;
+    const values = [question_id, count, count * page - count];
 
     return pool.query(queryString, values);
   },
