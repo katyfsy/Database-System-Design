@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+      POSTGRES_HOST: host.docker.internal
+    ports:
+      - '5432:5432'
+    volumes:
+      # - db:/var/lib/postgresql/data
+      - ./server/db_schema.sql:/docker-entrypoint-initdb.d/db_schema.sql
+
+  server:
+    image: node
+    command: sh -c "npm install && npm start"
+    working_dir: /SDC-QA
+    ports:
+      - '3030:3030'
+    volumes:
+      - ./:/SDC-QA
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+
+volumes:
+  db:
