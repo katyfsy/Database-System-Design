@@ -5,7 +5,7 @@ require('dotenv').config();
 const { USER, PASSWORD, DB_PORT } = process.env;
 
 const pool = new Pool({
-  host: 'localhost',
+  host: 'ec2-34-201-112-63.compute-1.amazonaws.com',
   user: USER,
   password: PASSWORD,
   port: DB_PORT,
