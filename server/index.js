@@ -18,6 +18,10 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/', router);
 
+app.get('/loaderio-8cac818c65c703f7685aee17c86e76c1', (req, res) => {
+  res.sendFile('../loaderio-8cac818c65c703f7685aee17c86e76c1.txt');
+});
+
 app.listen(SERVER_PORT, () => {
   console.log(`Server is listening on ${SERVER_PORT}`);
 });
