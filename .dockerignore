@@ -3,3 +3,7 @@
 .gitignore
 node_modules
 npm-debug.log
+
+answers.csv
+questions.csv
+answers_photos.csv
