@@ -1,19 +1,16 @@
+# what type of env / what existing docker image to choose
 FROM node:latest
-
-# Create app directory
+# the directory we are working from basically a way to cd into a directory
 WORKDIR /SDC-QA
-
-# Install app dependencies
-# A wildcard is used to ensure both package.json AND package-lock.json are copied
-# where available (npm@5+)
-# COPY package*.json ./
-COPY . .
-
+# copy package file into the directory
+COPY package*.json ./
+# install deps
 RUN npm install
-# If you are building your code for production
-# RUN npm install --only=production
-
-# Defind what port app binds to
+# copy source code (will ignore node_modules thanks to .dockerignore)
+COPY . .
+# Set env variables
+ENV PORT=3030
+# make port available outside docker container
 EXPOSE 3030
-
-CMD [ "npm", "start" ]
+# command to start application
+CMD ["npm","start"]

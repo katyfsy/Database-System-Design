@@ -2,22 +2,20 @@ const express = require('express');
 
 const app = express();
 const cors = require('cors');
-const redis = require('redis');
+// const redis = require('redis');
 
-const client = redis.createClient({
-  legacyMode: true,
-});
+// (async () => {
+//   const client = redis.createClient({
+//     legacyMode: true,
+//   });
 
-(async () => {
-  const client = createClient();
+//   client.on('error', (err) => console.log('Redis Client Error', err));
 
-  client.on('error', (err) => console.log('Redis Client Error', err));
+//   await client.connect();
 
-  await client.connect();
-
-  await client.set('key', 'value');
-  const value = await client.get('key');
-})();
+//   await client.set('key', 'value');
+//   const value = await client.get('key');
+// })();
 
 const pool = require('./database');
 const router = require('./routes');
