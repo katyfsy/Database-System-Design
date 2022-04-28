@@ -2,7 +2,12 @@ const express = require('express');
 
 const app = express();
 const cors = require('cors');
-// const morgan = require('morgan');
+const redis = require('redis');
+
+const client = redis.createClient({
+  legacyMode: true,
+});
+
 const pool = require('./database');
 const router = require('./routes');
 
