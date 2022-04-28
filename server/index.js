@@ -8,6 +8,17 @@ const client = redis.createClient({
   legacyMode: true,
 });
 
+(async () => {
+  const client = createClient();
+
+  client.on('error', (err) => console.log('Redis Client Error', err));
+
+  await client.connect();
+
+  await client.set('key', 'value');
+  const value = await client.get('key');
+})();
+
 const pool = require('./database');
 const router = require('./routes');
 
