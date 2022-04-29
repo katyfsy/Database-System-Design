@@ -10,6 +10,7 @@ const pool = new Pool({
   password: 'ubuntu' || PASSWORD,
   port: DB_PORT,
   database: 'questionsanswers',
+  max: 50,
 });
 
 pool
