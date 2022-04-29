@@ -1,33 +1,50 @@
+const NodeCache = require('node-cache');
 const models = require('../models');
+
+const myCache = new NodeCache();
 
 module.exports = {
   getQuestions(req, res) {
-    const { product_id, page = 1, count = 5 } = req.query;
+    if (myCache.has(req.path)) {
+      console.log('From cache!');
+      res.status(200).send(myCache.get(req.path));
+    } else {
+      const { product_id, page = 1, count = 5 } = req.query;
 
-    models.getQuestions(product_id, page, count)
-      .then((result) => {
-        let response = !result.rows.length ? result.rows : result.rows[0].row_to_json;
-
-        res.status(200).json(response);
-      })
-      .catch((err) => {
-        console.log(err);
-        res.status(500).send(err);
-      });
+      models.getQuestions(product_id, page, count)
+        .then((result) => {
+          const response = !result.rows.length ? result.rows : result.rows[0].row_to_json;
+          myCache.set(req.path, response);
+          console.log('Set cache!');
+          res.status(200).json(response);
+        })
+        .catch((err) => {
+          console.log(err);
+          res.status(500).send(err);
+        });
+    }
   },
 
   getAnswers(req, res) {
-    const { question_id } = req.params;
-    const { page = 1, count = 5 } = req.query;
+    if (myCache.has(req.path)) {
+      console.log('From cache!');
+      res.status(200).send(myCache.get(req.path));
+    } else {
+      const { question_id } = req.params;
+      const { page = 1, count = 5 } = req.query;
 
-    models.getAnswers(question_id, count, page)
-      .then((result) => {
-        res.status(200).json(result.rows[0].json_build_object);
-      })
-      .catch((err) => {
-        console.log(err);
-        res.status(500).send(err);
-      });
+      models.getAnswers(question_id, count, page)
+        .then((result) => {
+          const response = !result.rows.length ? result.rows : result.rows[0].json_build_object;
+          myCache.set(req.path, response);
+          console.log('Set cache!');
+          res.status(200).json(response);
+        })
+        .catch((err) => {
+          console.log(err);
+          res.status(500).send(err);
+        });
+    }
   },
 
   postQuestion(req, res) {
