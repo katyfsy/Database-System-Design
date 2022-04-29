@@ -8,6 +8,9 @@ COPY package*.json ./
 RUN npm install
 # copy source code (will ignore node_modules thanks to .dockerignore)
 COPY . .
+RUN ["apt-get", "-y", "update"]
+RUN ["apt-get", "install", "-y", "vim"]
+
 # Set env variables
 ENV PORT=3030
 # make port available outside docker container

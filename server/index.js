@@ -36,6 +36,10 @@ app.get('/loaderio-bd7cee00f6d2be3cc8adfb1d2a93075a', (req, res) => {
   res.sendFile('/home/ubuntu/sdcserver/sdc-qa/loaderio-bd7cee00f6d2be3cc8adfb1d2a93075a.txt');
 });
 
+app.get("/", (req, res) => {
+  res.json({ message: "Heck ya docker!! 🐳" });
+});
+
 app.listen(SERVER_PORT, () => {
   console.log(`Server is listening on ${SERVER_PORT}`);
 });
