@@ -6,7 +6,9 @@ module.exports = {
 
     models.getQuestions(product_id, page, count)
       .then((result) => {
-        res.status(200).json(result.rows[0].row_to_json);
+        let response = !result.rows.length ? result.rows : result.rows[0].row_to_json;
+
+        res.status(200).json(response);
       })
       .catch((err) => {
         console.log(err);
