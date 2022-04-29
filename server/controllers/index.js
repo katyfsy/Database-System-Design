@@ -1,21 +1,22 @@
 const NodeCache = require('node-cache');
 const models = require('../models');
 
-const myCache = new NodeCache();
+const myCacheProduct = new NodeCache();
+const myCacheQuestion = new NodeCache();
 
 module.exports = {
   getQuestions(req, res) {
-    console.log(req.path);
-    if (myCache.has(req.path)) {
+    console.log(req);
+    if (myCacheProduct.has(req.query.product_id)) {
       console.log('From cache!');
-      res.status(200).send(myCache.get(req.path));
+      res.status(200).send(myCacheProduct.get(req.query.product_id));
     } else {
       const { product_id, page = 1, count = 5 } = req.query;
 
       models.getQuestions(product_id, page, count)
         .then((result) => {
           const response = !result.rows.length ? result.rows : result.rows[0].row_to_json;
-          myCache.set(req.path, response);
+          myCacheProduct.set(req.query.product_id, response);
           console.log('Set cache!');
           res.status(200).json(response);
         })
@@ -28,9 +29,9 @@ module.exports = {
 
   getAnswers(req, res) {
     console.log(req.path);
-    if (myCache.has(req.path)) {
+    if (myCacheQuestion.has(req.params.question_id)) {
       console.log('From cache!');
-      res.status(200).send(myCache.get(req.path));
+      res.status(200).send(myCacheQuestion.get(req.params.question_id));
     } else {
       const { question_id } = req.params;
       const { page = 1, count = 5 } = req.query;
@@ -38,7 +39,7 @@ module.exports = {
       models.getAnswers(question_id, count, page)
         .then((result) => {
           const response = !result.rows.length ? result.rows : result.rows[0].json_build_object;
-          myCache.set(req.path, response);
+          myCacheQuestion.set(req.params.question_id, response);
           console.log('Set cache!');
           res.status(200).json(response);
         })
