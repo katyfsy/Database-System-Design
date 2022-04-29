@@ -6,8 +6,8 @@ const { USER, PASSWORD, DB_PORT } = process.env;
 
 const pool = new Pool({
   host: 'ec2-54-160-166-44.compute-1.amazonaws.com',
-  user: USER,
-  password: PASSWORD,
+  user: 'ubuntu' || USER,
+  password: 'ubuntu' || PASSWORD,
   port: DB_PORT,
   database: 'questionsanswers',
 });

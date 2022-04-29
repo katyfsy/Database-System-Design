@@ -3,15 +3,10 @@ const models = require('../models');
 module.exports = {
   getQuestions(req, res) {
     const { product_id, page = 1, count = 5 } = req.query;
-    const formattedResult = {
-      product_id: product_id
-    };
 
     models.getQuestions(product_id, page, count)
       .then((result) => {
-        formattedResult.results = result.rows;
-        console.log(result.rows);
-        res.status(200).json(formattedResult);
+        res.status(200).json(result.rows[0].row_to_json);
       })
       .catch((err) => {
         console.log(err);
@@ -22,17 +17,10 @@ module.exports = {
   getAnswers(req, res) {
     const { question_id } = req.params;
     const { page = 1, count = 5 } = req.query;
-    const formattedResult = {
-      question: question_id,
-      page: page,
-      count: count
-    };
 
     models.getAnswers(question_id, count, page)
       .then((result) => {
-        formattedResult.results = result.rows;
-        console.log(result.rows);
-        res.status(200).json(formattedResult);
+        res.status(200).json(result.rows[0].json_build_object);
       })
       .catch((err) => {
         console.log(err);

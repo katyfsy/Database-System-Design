@@ -3,34 +3,34 @@ const pool = require('../database');
 module.exports = {
   getQuestions(product_id, page, count) {
     const queryString = `
-      SELECT
-        questions.id AS question_id,
-        questions.question_body,
-        to_timestamp(questions.question_date/1000) AS question_date,
-        questions.asker_name,
-        questions.reported,
-        questions.helpful AS question_helpfulness,COALESCE (
-          JSON_OBJECT_AGG(answers.id,
-            JSON_BUILD_OBJECT(
-              'id', answers.id,
-              'body', answers.answer_body,
-              'date', to_timestamp(answers.answer_date/1000),
-              'answerer_name', answers.answer_name,
-              'helpfulness', answers.helpful,
+    SELECT row_to_json(quest)
+    from(
+      select product_id,
+      (
+        select json_agg(json_build_object('question_id', questions.id, 'question_body', question_body, 'question_date', question_date, 'asker_name', asker_name, 'question_helpfulness', helpful, 'reported', reported, 'answers',
+        (
+          select json_object_agg(
+            id, json_build_object(
+              'id', id,
+              'body', answer_body,
+              'date', answer_date,
+              'answerer_name', answer_name,
+              'helpfulness', helpful,
               'photos',
-              ARRAY (SELECT answers_photos.photo_url as URL FROM answers_photos WHERE answers_photos.answer_id = answers.id )
+              (select array
+                (select photo_url from answers_photos where answer_id = answers.id)
+              )
             )
           )
-          FILTER (WHERE answers.id IS NOT NULL),
-          '{}'::JSON
-        ) AS answers
-      FROM questions
-      LEFT JOIN
-        answers
-      ON questions.id = answers.question_id
-      WHERE product_id = $1
-      AND questions.reported = false
-      GROUP BY questions.id
+        from answers
+        where question_id = questions.id
+        )
+      ))
+      from questions
+      where product_id = $1  AND reported = false
+      ) as results
+      from questions where product_id = $1
+    ) quest
       LIMIT $2
       OFFSET $3
       `;
@@ -41,26 +41,34 @@ module.exports = {
 
   getAnswers(question_id, count, page) {
     const queryString = `
-      SELECT
-        answers.id AS answer_id,
-        answers.answer_body,
-        to_timestamp(answers.answer_date/1000) AS date,
-        answers.answer_name,
-        answers.answer_email,
-        answers.reported,
-        answers.helpful,
-        COALESCE (
-            json_agg(
+    SELECT json_build_object(
+      'question', id,
+      'page', ${page},
+      'count', ${count},
+      'results',
+      (
+        select json_agg(
+          json_build_object(
+            'answer_id', id,
+            'body', answer_body,
+            'date', answer_date,
+            'answerer_name', answer_name,
+            'helpfulness', helpful,
+            'photos',
+            (select json_agg(
               json_build_object(
-                  'id', answers_photos.id, 'answer id', answers_photos.answer_id, 'url', answers_photos.photo_url))
-          FILTER (WHERE answers_photos.id IS NOT NULL), '[]') AS photos
-      FROM answers
-      LEFT JOIN
-        answers_photos
-      ON answers.id = answers_photos.answer_id
-      WHERE answers.question_id = $1
-      AND answers.reported = false
-      GROUP BY answers.id
+                'id', id,
+                'url', photo_url
+              )
+            ) from answers_photos
+            where answer_id = answers.id
+          )
+        )
+      ) as results
+      from answers
+      where question_id = questions.id
+      )
+    ) from questions where id = $1
       LIMIT $2
       OFFSET $3
       ;`;
