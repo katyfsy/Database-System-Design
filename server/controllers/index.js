@@ -6,7 +6,6 @@ const myCacheQuestion = new NodeCache();
 
 module.exports = {
   getQuestions(req, res) {
-    console.log(req);
     if (myCacheProduct.has(req.query.product_id)) {
       console.log('From cache!');
       res.status(200).send(myCacheProduct.get(req.query.product_id));
@@ -28,7 +27,6 @@ module.exports = {
   },
 
   getAnswers(req, res) {
-    console.log(req.path);
     if (myCacheQuestion.has(req.params.question_id)) {
       console.log('From cache!');
       res.status(200).send(myCacheQuestion.get(req.params.question_id));
