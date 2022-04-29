@@ -32,8 +32,8 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/', router);
 
-app.get('/loaderio-bd7cee00f6d2be3cc8adfb1d2a93075a', (req, res) => {
-  res.sendFile('/home/ubuntu/sdcserver/sdc-qa/loaderio-bd7cee00f6d2be3cc8adfb1d2a93075a.txt');
+app.get('/loaderio-9e66c8a0bc1c4a50d78d79667a19821f', (req, res) => {
+  res.sendFile('/home/ubuntu/sdcserver/sdc-qa/loaderio-9e66c8a0bc1c4a50d78d79667a19821f.txt');
 });
 
 app.get("/", (req, res) => {
