@@ -7,7 +7,6 @@ const myCacheQuestion = new NodeCache();
 module.exports = {
   getQuestions(req, res) {
     if (myCacheProduct.has(req.query.product_id)) {
-      console.log('From cache!');
       res.status(200).send(myCacheProduct.get(req.query.product_id));
     } else {
       const { product_id, page = 1, count = 5 } = req.query;
@@ -16,11 +15,9 @@ module.exports = {
         .then((result) => {
           const response = !result.rows.length ? result.rows : result.rows[0].row_to_json;
           myCacheProduct.set(req.query.product_id, response);
-          console.log('Set cache!');
           res.status(200).json(response);
         })
         .catch((err) => {
-          console.log(err);
           res.status(500).send(err);
         });
     }
@@ -28,7 +25,6 @@ module.exports = {
 
   getAnswers(req, res) {
     if (myCacheQuestion.has(req.params.question_id)) {
-      console.log('From cache!');
       res.status(200).send(myCacheQuestion.get(req.params.question_id));
     } else {
       const { question_id } = req.params;
@@ -38,11 +34,9 @@ module.exports = {
         .then((result) => {
           const response = !result.rows.length ? result.rows : result.rows[0].json_build_object;
           myCacheQuestion.set(req.params.question_id, response);
-          console.log('Set cache!');
           res.status(200).json(response);
         })
         .catch((err) => {
-          console.log(err);
           res.status(500).send(err);
         });
     }
@@ -68,7 +62,6 @@ module.exports = {
       .then((result) => res.status(200).send('Answer Created'))
       .catch((err) => {
         res.status(500).send(err);
-        console.log(err.message);
       });
   },
 
