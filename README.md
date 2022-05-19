@@ -33,7 +33,7 @@ Support an existing [retail web application](https://github.com/katyfsy/FEC-Proj
 ### Installation and Setup
 To download a copy of this project to your local machine:
 ```
-$ git clone repo_url
+$ git clone https://github.com/katyfsy/Database-System-Design
 ```
 
 Runs the app in the development mode.
